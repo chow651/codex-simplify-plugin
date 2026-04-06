@@ -1,0 +1,42 @@
+{
+  "name": "simplify",
+  "version": "0.1.0",
+  "description": "Run a cleanup review over changed code for reuse, quality, and efficiency.",
+  "author": {
+    "name": "chow651",
+    "url": "https://github.com/chow651"
+  },
+  "homepage": "https://github.com/chow651/codex-simplify-plugin",
+  "repository": "https://github.com/chow651/codex-simplify-plugin",
+  "license": "MIT",
+  "keywords": [
+    "simplify",
+    "review",
+    "cleanup",
+    "quality",
+    "efficiency"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Simplify",
+    "shortDescription": "Run a final cleanup review over changed code",
+    "longDescription": "Use Simplify to run a focused cleanup pass over current code changes, checking reuse opportunities, structural quality, and efficiency before considering the work finished.",
+    "developerName": "chow651",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/chow651/codex-simplify-plugin",
+    "privacyPolicyURL": "https://github.com/chow651/codex-simplify-plugin",
+    "termsOfServiceURL": "https://github.com/chow651/codex-simplify-plugin",
+    "defaultPrompt": [
+      "Run simplify on the current diff",
+      "Review my recent code changes for cleanup opportunities",
+      "Check this implementation for reuse, quality, and efficiency issues"
+    ],
+    "brandColor": "#111111",
+    "screenshots": []
+  }
+}
