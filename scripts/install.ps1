@@ -14,6 +14,43 @@ function Ensure-Directory {
   }
 }
 
+function ConvertTo-HashtableRecursive {
+  param([Parameter(ValueFromPipeline = $true)] $InputObject)
+
+  if ($null -eq $InputObject) {
+    return $null
+  }
+
+  if ($InputObject -is [System.Collections.IDictionary]) {
+    $result = [ordered]@{}
+    foreach ($key in $InputObject.Keys) {
+      $result[$key] = ConvertTo-HashtableRecursive $InputObject[$key]
+    }
+    return $result
+  }
+
+  if ($InputObject -is [System.Collections.IEnumerable] -and -not ($InputObject -is [string])) {
+    $items = @()
+    foreach ($item in $InputObject) {
+      $items += ,(ConvertTo-HashtableRecursive $item)
+    }
+    return $items
+  }
+
+  if ($InputObject -is [psobject]) {
+    $properties = $InputObject.PSObject.Properties
+    if ($properties.Count -gt 0) {
+      $result = [ordered]@{}
+      foreach ($property in $properties) {
+        $result[$property.Name] = ConvertTo-HashtableRecursive $property.Value
+      }
+      return $result
+    }
+  }
+
+  return $InputObject
+}
+
 function Sync-LocalRepo {
   param(
     [string]$Source,
@@ -82,8 +119,8 @@ function Update-Marketplace {
     return
   }
 
-  $marketplace = Get-Content -LiteralPath $MarketplacePath -Raw | ConvertFrom-Json -AsHashtable
-  if (-not $marketplace.ContainsKey('plugins')) {
+  $marketplace = Get-Content -LiteralPath $MarketplacePath -Raw | ConvertFrom-Json | ConvertTo-HashtableRecursive
+  if (-not $marketplace.Contains('plugins')) {
     $marketplace.plugins = @()
   }
 
@@ -153,20 +190,20 @@ function Install-CodexHook {
   }
 
   if (Test-Path -LiteralPath $CodexHooksPath) {
-    $hooks = Get-Content -LiteralPath $CodexHooksPath -Raw | ConvertFrom-Json -AsHashtable
+    $hooks = Get-Content -LiteralPath $CodexHooksPath -Raw | ConvertFrom-Json | ConvertTo-HashtableRecursive
   } else {
     $hooks = [ordered]@{ hooks = [ordered]@{} }
   }
 
-  if (-not $hooks.ContainsKey('hooks')) {
+  if (-not $hooks.Contains('hooks')) {
     $hooks.hooks = [ordered]@{}
   }
-  if (-not $hooks.hooks.ContainsKey('Stop')) {
+  if (-not $hooks.hooks.Contains('Stop')) {
     $hooks.hooks.Stop = @()
   }
 
   $exists = $false
-  foreach ($stopEntry in $hooks.hooks.Stop) {
+  foreach ($stopEntry in @($hooks.hooks.Stop)) {
     foreach ($existing in @($stopEntry.hooks)) {
       if ($existing.command -eq $command) {
         $exists = $true
@@ -179,7 +216,9 @@ function Install-CodexHook {
   }
 
   if (-not $exists) {
-    $hooks.hooks.Stop += [ordered]@{ hooks = @($entry) }
+    $stopEntries = @($hooks.hooks.Stop)
+    $stopEntries += ,([ordered]@{ hooks = @($entry) })
+    $hooks.hooks.Stop = $stopEntries
   }
 
   $hooks | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $CodexHooksPath -Encoding UTF8
