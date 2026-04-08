@@ -17,6 +17,7 @@
 |---|---|
 | Entry skill | [`skills/using-simplify/SKILL.md`](./skills/using-simplify/SKILL.md) |
 | Cleanup protocol | [`skills/simplify/SKILL.md`](./skills/simplify/SKILL.md) |
+| Review modes | Lite / Standard / Strict |
 | Best Windows setup | Skill + `AGENTS.md` gate |
 | Best macOS/Linux setup | Skill + `AGENTS.md` gate + optional Codex `Stop` hook |
 | What the plugin adds | Easier install, marketplace entry, skill mirror, optional gates |
@@ -34,6 +35,46 @@ The cleanup protocol asks the main agent to:
 - review the current task scope through the right tracks
 - merge findings into `must_fix`, `fix_if_cheap`, and `note_only`
 - rerun verification before claiming completion
+
+## Outcome Model
+
+Decide closure in this order:
+
+1. `Skip` when there is no meaningful behavior-affecting diff
+2. `Strict` when any high-risk signal is present
+3. `Lite` when the change is local and low-risk
+4. `Standard` for everything else
+
+`Skip` and `no cleanup needed` are different:
+
+- `Skip` means there was no meaningful simplify target.
+- `No cleanup needed` means simplify ran, reviewed the task, and found no worthwhile cleanup to apply.
+
+## Review Modes
+
+| Outcome | Use when | Result |
+|---|---|---|
+| `Skip` | Docs-only, comments-only, formatting-only, unrelated metadata, or no task-related behavior diff | Say the skip reason explicitly |
+| `Lite` | 1 to 2 local low-risk files, with no shared module, config, dependency, hook, plugin, or verification-scope change | Short review plus the smallest meaningful verification |
+| `Standard` | Normal feature, bugfix, or refactor closure | Full normal cleanup protocol |
+| `Strict` | Any high-risk or wide-scope change | Stronger review and broader verification |
+
+Strict is triggered by objective signals such as:
+
+- 6 or more changed files
+- build or runtime configuration changes
+- dependency manifest changes
+- shared or public module changes
+- test changes that expand verification scope
+- hook or plugin manifest changes
+- user-visible behavior changes across multiple call sites
+
+`No cleanup needed` is valid only when you can show evidence that:
+
+- the change stayed local
+- it followed existing repository patterns
+- it did not add unnecessary abstraction, state, or duplication
+- the affected path was already adequately verified
 
 Core tracks:
 
@@ -115,11 +156,18 @@ The hook is optional. The skill is the core product.
 ## Typical Workflow
 
 1. Finish the main implementation and run your normal verification.
-2. Let `using-simplify` decide whether closure conditions require simplify.
-3. Run `simplify` on the current diff.
+2. Let `using-simplify` decide `Skip`, `Strict`, `Lite`, or `Standard`.
+3. If not skipped, run `simplify` on the current diff.
 4. Run the matching review tracks.
-5. Fix worthwhile findings.
+5. Either conclude `no cleanup needed` with evidence or fix worthwhile findings.
 6. Re-verify before stopping.
+
+## Worked Examples
+
+- [Feature / Standard: one-command installers](./examples/feature-standard-closure.md)
+- [Bugfix: older PowerShell installer compatibility](./examples/bugfix-closure.md)
+- [Lite / no cleanup needed: local installer compatibility fix](./examples/lite-no-cleanup-needed.md)
+- [Strict: routing and protocol layering across plugin, hook, and skills](./examples/strict-closure.md)
 
 ## Why This Repo Is A Plugin At All
 

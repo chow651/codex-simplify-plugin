@@ -40,6 +40,17 @@ BEHAVIOR_FILENAMES = {
     ".app.json",
     ".mcp.json",
     "plugin.json",
+    "package.json",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    "requirements.txt",
+    "pyproject.toml",
+    "poetry.lock",
+    "Cargo.toml",
+    "Cargo.lock",
+    "go.mod",
+    "go.sum",
 }
 
 REVIEW_ONLY_PATTERNS = [
@@ -167,6 +178,51 @@ def has_simplify_evidence(window: str) -> bool:
     return has_summary and has_resolution
 
 
+def has_strict_signal(paths: list[str]) -> bool:
+    if len(paths) >= 6:
+        return True
+    lowered_paths = [path.lower().replace("\\", "/") for path in paths]
+    signal_patterns = (
+        "/tests/",
+        "/test/",
+        "/hooks/",
+        "/.codex-plugin/",
+        "package.json",
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock",
+        "requirements.txt",
+        "pyproject.toml",
+        "poetry.lock",
+        "cargo.toml",
+        "cargo.lock",
+        "go.mod",
+        "go.sum",
+        "dockerfile",
+        ".github/workflows/",
+        "simplify_stop_gate.py",
+        "/config/",
+        "/configs/",
+    )
+    return any(any(pattern in path for pattern in signal_patterns) for path in lowered_paths)
+
+
+def has_shared_surface_signal(paths: list[str]) -> bool:
+    lowered_paths = [path.lower().replace("\\", "/") for path in paths]
+    return any(
+        path.startswith("skills/") or path == "examples/agents.snippet.md"
+        for path in lowered_paths
+    )
+
+
+def is_lite_signal(paths: list[str]) -> bool:
+    return (
+        len(paths) <= 2
+        and not has_strict_signal(paths)
+        and not has_shared_surface_signal(paths)
+    )
+
+
 def task_related_files(changed: list[str], window: str) -> list[str]:
     if not window:
         return []
@@ -198,6 +254,14 @@ def emit_block(reason: str) -> None:
     )
 
 
+def should_block_stop(task_diff: list[str], has_evidence: bool, review_only: bool) -> bool:
+    if review_only or not task_diff or has_evidence:
+        return False
+    if is_lite_signal(task_diff):
+        return False
+    return True
+
+
 def main() -> int:
     payload = load_payload()
     if payload.get("stop_hook_active"):
@@ -210,24 +274,23 @@ def main() -> int:
         return 0
 
     window = transcript_window(payload.get("transcript_path"))
-    if is_review_only(window):
+    review_only = is_review_only(window)
+    if review_only:
         emit_continue()
         return 0
 
     changed = [path for path in changed_files(cwd) if is_behavior_affecting(path)]
     task_diff = task_related_files(changed, window)
-    if not task_diff:
-        emit_continue()
-        return 0
-
-    if has_simplify_evidence(window):
+    has_evidence = has_simplify_evidence(window)
+    if not should_block_stop(task_diff=task_diff, has_evidence=has_evidence, review_only=review_only):
         emit_continue()
         return 0
 
     emit_block(
-        "Run simplify before stopping. Classify this task as feature, refactor, or bugfix; "
-        "review the matching tracks such as repo_fit, quality, reuse, or blast_radius; fix "
-        "must-fix items; rerun verification; then report kept findings with reasons."
+        "Run using-simplify before stopping. Decide whether this closure is Lite, Standard, or Strict; "
+        "if simplify is required, classify the task as feature, refactor, or bugfix, review the matching "
+        "tracks, conclude no-cleanup-needed or fix must-fix items, rerun the right level of verification, "
+        "then report the outcome with reasons."
     )
     return 0
 

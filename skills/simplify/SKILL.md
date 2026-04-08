@@ -17,6 +17,22 @@ Its job is to reduce future maintenance debt before you treat the current task a
 
 This skill is the execution protocol that runs after `using-simplify`, a user request, or a standing instruction has already decided simplify should happen.
 
+## Modes
+
+Simplify runs in one of three modes:
+
+- `Lite`
+- `Standard`
+- `Strict`
+
+If the caller did not choose a mode, stop and choose one before continuing.
+
+Mode selection order is fixed:
+
+1. `Strict` if any strict signal is present
+2. `Lite` only if all lite signals are satisfied
+3. `Standard` for everything else
+
 ## When To Use
 
 Run `simplify` when the current task has already been routed into simplify and all of these are true:
@@ -61,17 +77,34 @@ It does not mean:
 - unrelated generated churn
 - unrelated metadata changes with no behavior impact
 
+## No Cleanup Needed
+
+`No cleanup needed` is a valid end state.
+
+Use it when all of these are true:
+
+- the change stays local
+- it follows existing repository patterns
+- it does not add unnecessary abstraction, state, or duplication
+- the affected path is already adequately verified
+
+If you conclude `no cleanup needed`, still report:
+
+- why no cleanup was needed
+- what verification already covers the change
+
 ## The Rule
 
 Before claiming completion:
 
 1. classify the task
-2. choose the review tracks
-3. review the current task scope
-4. merge findings locally
-5. fix the worthwhile findings
-6. rerun verification
-7. report fixed findings and kept findings with reasons
+2. confirm the mode
+3. choose the review tracks
+4. review the current task scope
+5. merge findings locally
+6. either conclude `no cleanup needed` or fix the worthwhile findings
+7. rerun the right level of verification
+8. report the outcome
 
 If you did not complete these steps, you did not finish simplify.
 
@@ -85,7 +118,59 @@ Choose exactly one closure type:
 
 If the task began as debugging, testing, or architecture implementation, map it to one of those three closure types before continuing.
 
-## Step 2: Choose Review Tracks
+## Step 2: Confirm The Mode
+
+Use the same objective signals every time.
+
+### Strict Signals
+
+Use `Strict` when any of these is true:
+
+- 6 or more files are touched
+- build or runtime configuration changed
+- dependency manifests changed
+- tests changed in a way that expands or reshapes verification scope
+- shared or public modules changed
+- hook configuration changed
+- plugin manifest changed
+- user-visible behavior changed across multiple call sites
+
+### Lite
+
+Use `Lite` when the change is local and low-risk.
+
+Lite applies only when all of these are true:
+
+- 1 or 2 files are touched
+- no shared or public module is changed
+- no build, runtime, dependency, hook, or plugin configuration is changed
+- no test strategy change is needed
+
+Lite focuses on only three questions:
+
+- did this change introduce obvious extra complexity
+- did this change introduce obvious new risk
+- what is the smallest meaningful verification to rerun
+
+Lite output should stay short.
+
+### Standard
+
+Use `Standard` for the normal case.
+
+This is the default mode for ordinary feature, bugfix, and refactor closure.
+
+### Strict
+
+Use `Strict` for high-risk or wide-scope changes.
+
+Strict means:
+
+- full track discipline
+- stronger evidence thresholds
+- broader verification than Lite or Standard
+
+## Step 3: Choose Review Tracks
 
 For `feature`:
 
@@ -159,7 +244,7 @@ Look for:
 - unnecessary repeated checks
 - avoidable memory growth
 
-## Step 3: Review The Current Task Scope
+## Step 4: Review The Current Task Scope
 
 Inspect only the current task scope:
 
@@ -169,7 +254,7 @@ Inspect only the current task scope:
 
 Do not expand this into a broad architecture review.
 
-## Step 4: Review Mode
+## Step 5: Review Mode
 
 Prefer one read-only reviewer per selected track when subagents are available.
 
@@ -184,6 +269,12 @@ Reviewer rules:
 - reviewers do not recommend speculative changes outside the current task scope
 
 ## Finding Contract
+
+Keep the finding count proportional to the mode:
+
+- `Lite`: at most 2 findings total
+- `Standard`: at most 5 findings total
+- `Strict`: at most 8 findings total
 
 Use this structure for findings:
 
@@ -212,7 +303,7 @@ findings:
 - `P2`: worthwhile cleanup with limited scope and clear payoff
 - `P3`: optional observation for the record only
 
-## Step 5: Merge Findings Locally
+## Step 6: Merge Findings Locally
 
 The main agent is the decision-maker.
 
@@ -238,12 +329,14 @@ Default policy:
 - `P2` -> `fix_if_cheap`
 - `P3` -> `note_only`
 
-## Step 6: Fix Only Worthwhile Things
+## Step 7: Fix Only Worthwhile Things
 
 Fix:
 
 - all real `must_fix` findings
 - `fix_if_cheap` findings that stay within the task boundary
+
+If no finding survives triage, conclude `no cleanup needed` and state why.
 
 Do not:
 
@@ -252,7 +345,15 @@ Do not:
 - accept speculative architecture advice without repository evidence
 - chase low-confidence findings without concrete support
 
-## Step 7: Rerun Verification
+## Step 8: Rerun Verification
+
+Choose the smallest verification that still proves the cleanup is safe.
+
+Verification order:
+
+1. affected-path verification
+2. task-level verification
+3. broader verification only when the change or cleanup widened risk
 
 After cleanup changes:
 
@@ -260,12 +361,15 @@ After cleanup changes:
 - confirm no new failures were introduced
 - confirm simplify did not expand scope unexpectedly
 
-## Step 8: Report Outcome
+## Step 9: Report Outcome
 
 Report:
 
+- mode
 - task type
 - selected tracks
+- no-cleanup-needed or cleanup-applied
+- no-cleanup-needed evidence when that is the outcome
 - fixed findings
 - kept findings
 - reasons for kept findings
@@ -291,6 +395,7 @@ If you catch yourself thinking any of these, stop and run simplify correctly:
 | "The implementation already works" | Working code still accumulates maintenance debt. |
 | "Tests passed, so cleanup can wait" | Passing tests do not remove duplication, drift, or structural noise. |
 | "This is too small for simplify" | Small tasks are exactly where silent debt slips through. |
+| "I'll use the full protocol every time to be safe" | Over-review creates noise and encourages formalism. Pick the right mode. |
 | "I'll just run every track" | Wrong track choice adds noise and hides real issues. |
 | "I'll accept every suggestion" | Simplify is triage, not blind compliance. |
 | "I can skip verification after cleanup" | Cleanup can still break behavior. Re-verify. |
