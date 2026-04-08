@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/plugins/simplify/scripts/simplify_stop_gate.py\"",
+            "timeout": 30,
+            "statusMessage": "Checking simplify completion gate"
+          }
+        ]
+      }
+    ]
+  }
+}

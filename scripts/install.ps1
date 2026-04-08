@@ -130,10 +130,65 @@ function Install-GateSnippet {
   $merged | Set-Content -LiteralPath $AgentsPath -Encoding UTF8
 }
 
+function Install-CodexHook {
+  param(
+    [string]$CodexHooksPath,
+    [string]$PluginRoot
+  )
+
+  if ($IsWindows) {
+    Write-Output "Skipped Codex hooks install on Windows because Codex hooks are currently disabled on Windows."
+    return
+  }
+
+  Ensure-Directory -Path (Split-Path -Parent $CodexHooksPath)
+
+  $command = "python3 `"$($PluginRoot.Replace('\','/'))/scripts/simplify_stop_gate.py`""
+  $entry = [ordered]@{
+    type = "command"
+    command = $command
+    timeout = 30
+    statusMessage = "Checking simplify completion gate"
+  }
+
+  if (Test-Path -LiteralPath $CodexHooksPath) {
+    $hooks = Get-Content -LiteralPath $CodexHooksPath -Raw | ConvertFrom-Json -AsHashtable
+  } else {
+    $hooks = [ordered]@{ hooks = [ordered]@{} }
+  }
+
+  if (-not $hooks.ContainsKey('hooks')) {
+    $hooks.hooks = [ordered]@{}
+  }
+  if (-not $hooks.hooks.ContainsKey('Stop')) {
+    $hooks.hooks.Stop = @()
+  }
+
+  $exists = $false
+  foreach ($stopEntry in $hooks.hooks.Stop) {
+    foreach ($existing in @($stopEntry.hooks)) {
+      if ($existing.command -eq $command) {
+        $exists = $true
+        break
+      }
+    }
+    if ($exists) {
+      break
+    }
+  }
+
+  if (-not $exists) {
+    $hooks.hooks.Stop += [ordered]@{ hooks = @($entry) }
+  }
+
+  $hooks | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $CodexHooksPath -Encoding UTF8
+}
+
 $pluginRoot = Join-Path $InstallHome 'plugins\simplify'
 $marketplacePath = Join-Path $InstallHome '.agents\plugins\marketplace.json'
 $skillMirrorPath = Join-Path $InstallHome '.codex\skills\simplify\SKILL.md'
 $agentsPath = Join-Path $InstallHome '.codex\AGENTS.md'
+$codexHooksPath = Join-Path $InstallHome '.codex\hooks.json'
 
 Ensure-Directory -Path (Join-Path $InstallHome 'plugins')
 
@@ -148,6 +203,7 @@ Install-SkillMirror -PluginRoot $pluginRoot -SkillMirrorPath $skillMirrorPath
 
 if ($WithGate) {
   Install-GateSnippet -PluginRoot $pluginRoot -AgentsPath $agentsPath
+  Install-CodexHook -CodexHooksPath $codexHooksPath -PluginRoot $pluginRoot
 }
 
 Write-Output "Installed simplify plugin to $pluginRoot"
@@ -155,5 +211,6 @@ Write-Output "Updated marketplace: $marketplacePath"
 Write-Output "Installed visible skill mirror: $skillMirrorPath"
 if ($WithGate) {
   Write-Output "Installed Simplify Gate into $agentsPath"
+  Write-Output "Configured Codex Stop hook in $codexHooksPath when supported by the current platform"
 }
 Write-Output "Restart Codex to load the plugin."

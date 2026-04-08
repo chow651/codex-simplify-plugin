@@ -1,47 +1,61 @@
-# Codex Simplify 插件
+# Codex Simplify
+
+[![Skill-first](https://img.shields.io/badge/shape-skill--first-111111?style=flat-square)](./skills/simplify/SKILL.md)
+[![Windows](https://img.shields.io/badge/windows-AGENTS%20gate-0A7A3F?style=flat-square)](./examples/AGENTS.snippet.md)
+[![macOS%2FLinux](https://img.shields.io/badge/macos%2Flinux-optional%20Stop%20hook-1F6FEB?style=flat-square)](./examples/codex.hooks.json)
 
 [English README](./README.md)
 
-`simplify` 是一个面向 Codex 的代码收尾审查插件与技能。
+> 面向 Codex 收尾阶段的 skill-first 清理协议。<br>
+> 在任务结束前，把代码任务再收紧一轮。
 
-它的定位不是开场技能，而是**代码任务临近完成时**使用的一道收尾检查。目标很明确：围绕当前 diff，从三个方向做并行审查，再把真正成立的问题收敛修正。
+`simplify` 的主产品形态是 **Codex skill**。插件层主要负责安装和分发，真正有价值的核心，是那份在任务收尾时执行维护债清理协议的 skill。
 
-- reuse
-- quality
-- efficiency
+## 一眼看懂
 
-## 这个插件解决什么问题
+| 项目 | 默认理解 |
+|---|---|
+| 核心产品 | [`skills/simplify/SKILL.md`](./skills/simplify/SKILL.md) |
+| Windows 最优路径 | skill + `AGENTS.md` gate |
+| macOS / Linux 最优路径 | skill + `AGENTS.md` gate + 可选 `Stop` hook |
+| plugin 的意义 | 降低安装和分发成本 |
 
-很多代码在“能跑”之后，仍然会留下三类常见问题：
+## 它做什么
 
-- 明明已有现成工具或抽象，却又手写了一遍
-- 结构上能用，但还有冗余状态、参数蔓延、复制粘贴变体
-- 功能正确，但做了不必要的工作，或者在热路径上变重了
+当代码任务进入收尾阶段，`simplify` 会要求主 agent：
 
-`simplify` 的作用就是在**完成前**再做一次定向清理，而不是把它当成泛化的全局 code review。
+- 先把任务归类为 `feature`、`refactor`、`bugfix`
+- 再按任务类型选择正确审查轨道
+- 再把问题收敛到 `must_fix`、`fix_if_cheap`、`note_only`
+- 最后重新验证，再决定是否结束
 
-## 仓库内容
+核心审查轨道：
 
-- `.codex-plugin/plugin.json`
-- `skills/simplify/SKILL.md`
-- `examples/marketplace.json`
-- `examples/AGENTS.snippet.md`
+- `repo_fit`
+- `quality`
+- `reuse`
+- `blast_radius`
+- `efficiency`
 
-## 安装方式
+其中 `efficiency` 只在性能相关场景下加入。
 
-Windows PowerShell 一条命令安装：
+## 快速开始
+
+### 安装 Skill 套件
+
+Windows PowerShell：
 
 ```powershell
 irm https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.ps1 | iex
 ```
 
-macOS / Linux 一条命令安装：
+macOS / Linux：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.sh | bash
 ```
 
-如果你希望安装时顺手把 completion gate 也加进全局 `AGENTS.md`，可以用下面两条：
+### 安装并启用收尾 Gate
 
 Windows PowerShell：
 
@@ -55,60 +69,61 @@ macOS / Linux：
 curl -fsSL https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.sh | SIMPLIFY_WITH_GATE=1 bash
 ```
 
-安装脚本会自动完成这些事：
+## 三种使用方式
 
-- 把插件安装或更新到 `~/plugins/simplify`
-- 更新 `~/.agents/plugins/marketplace.json`
-- 把可见 skill 镜像写入 `~/.codex/skills/simplify/SKILL.md`
-- 可选地把 completion gate 写进 `~/.codex/AGENTS.md`
+| 模式 | 适合谁 | 额外增加什么 |
+|---|---|---|
+| 只用 Skill | 熟悉 Codex、想手动调用的人 | 只有 skill 本体 |
+| Skill + `AGENTS.md` gate | Windows 用户、希望规则更稳定的人 | 把 `Simplify Gate` 追加到 `~/.codex/AGENTS.md` |
+| Skill + `AGENTS.md` gate + Codex `Stop` hook | macOS / Linux 用户、想多一道原生门槛的人 | 另外把 `Stop` hook 写入 `~/.codex/hooks.json` |
 
-如果你更想手动接入，也可以参考下面这些文件：
+## 平台说明
 
-- 目标文件：`~/.agents/plugins/marketplace.json`
-- 示例内容见：[examples/marketplace.json](./examples/marketplace.json)
-- completion gate 片段见：[examples/AGENTS.snippet.md](./examples/AGENTS.snippet.md)
+| 平台 | Skill | `AGENTS.md` gate | Codex `Stop` hook |
+|---|---|---|---|
+| Windows | 可用 | 推荐作为主路径 | 当前不可用 |
+| macOS / Linux | 可用 | 有价值 | 可作为额外门槛 |
 
-## 可选的自动触发
+按 OpenAI 当前的 Codex hooks 文档，Windows 下 hooks 仍然是禁用状态。所以对 Windows 用户来说，真正可依赖的路径是：**skill + `AGENTS.md` gate**。
 
-如果你希望 `simplify` 在**代码任务收尾阶段**自动触发，而不是手动每次调用，那么把下面这份规则片段加进你自己的全局 `AGENTS.md`：
+## 安装脚本实际会写什么
 
-- [examples/AGENTS.snippet.md](./examples/AGENTS.snippet.md)
+- plugin：`~/plugins/simplify`
+- marketplace：`~/.agents/plugins/marketplace.json`
+- 可见 skill 镜像：`~/.codex/skills/simplify/SKILL.md`
+- 可选指令层 gate：`~/.codex/AGENTS.md`
+- 可选 Codex hook：`~/.codex/hooks.json`
 
-这一层的意义是：
+## Hook 配置
 
-- 只在代码任务、且存在有效代码改动时触发
-- 不在普通问答里乱触发
-- 不在每次写文件之后自动打断流程
+Codex 的 hook 发现位置在 `~/.codex/hooks.json` 或 `<repo>/.codex/hooks.json`，不在插件清单里。
 
-## 使用建议
+这个仓库提供的是：
 
-手动使用：
+- [SKILL.md](./skills/simplify/SKILL.md)：真正的 `simplify` 元技能
+- [AGENTS.snippet.md](./examples/AGENTS.snippet.md)：指令层收尾 gate
+- [simplify_stop_gate.py](./scripts/simplify_stop_gate.py)：Codex `Stop` hook 脚本
+- [codex.hooks.json](./examples/codex.hooks.json)：Codex hook 配置示例
 
-- 在 skill picker 或命令入口里调用 `simplify`
+hook 是增强层，不是核心产品本身。skill 才是主产品。
 
-推荐使用方式：
+## 典型使用流程
 
-- 只在当前已有代码改动时使用
-- 只围绕当前 diff 或当前任务涉及文件做审查
-- 把它当成 completion gate，而不是通用 code review
+1. 完成功能实现，并执行本来的验证。
+2. 针对当前 diff 调用 `simplify`。
+3. 运行对应的审查轨道。
+4. 修正值得修正的问题。
+5. 在结束前重新验证。
 
-## 适合什么场景
+## 为什么这个仓库仍然保留插件形态
 
-- 一个功能已经完成，准备收尾
-- 一次重构已经结束，准备检查有没有重复和结构性噪声
-- 一个 bugfix 已经通过测试，准备再做一轮轻量质量清理
+因为 plugin 解决的是**分发问题**，不是**能力问题**。
 
-## 不适合什么场景
+如果你已经熟悉 Codex skills 的手工管理方式，可以把这个项目理解成：
 
-- 会话刚开始的时候
-- 纯讨论、纯设计、纯问答阶段
-- 当前没有代码 diff 的阶段
-- 想让它代替完整架构评审的时候
+- 一份核心的 `simplify` skill
+- 外加一个便于公开分发的安装器
 
-## 一句话理解
+## 许可证
 
-`simplify` 不是让模型“再看一遍代码”，而是让它在收尾阶段，专门盯住：
-
-- 有没有能删掉的
-- 有没有能复用的
-- 有没有能更轻的
+[MIT](./LICENSE)

@@ -10,6 +10,7 @@ plugin_root="$INSTALL_HOME/plugins/simplify"
 marketplace_path="$INSTALL_HOME/.agents/plugins/marketplace.json"
 skill_mirror_path="$INSTALL_HOME/.codex/skills/simplify/SKILL.md"
 agents_path="$INSTALL_HOME/.codex/AGENTS.md"
+codex_hooks_path="$INSTALL_HOME/.codex/hooks.json"
 
 mkdir -p "$INSTALL_HOME/plugins"
 
@@ -63,10 +64,52 @@ if [[ "$WITH_GATE" == "1" ]]; then
   fi
 fi
 
+if [[ "$WITH_GATE" == "1" ]]; then
+  case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*)
+      echo "Skipped Codex hooks install on Windows because Codex hooks are currently disabled on Windows."
+      ;;
+    *)
+      mkdir -p "$(dirname "$codex_hooks_path")"
+      python3 - <<'PY' "$codex_hooks_path" "$plugin_root"
+import json, pathlib, sys
+
+hooks_path = pathlib.Path(sys.argv[1])
+plugin_root = pathlib.Path(sys.argv[2])
+command = f'python3 "{plugin_root.as_posix()}/scripts/simplify_stop_gate.py"'
+entry = {
+    "type": "command",
+    "command": command,
+    "timeout": 30,
+    "statusMessage": "Checking simplify completion gate",
+}
+
+if hooks_path.exists():
+    data = json.loads(hooks_path.read_text(encoding="utf-8"))
+else:
+    data = {"hooks": {}}
+
+hooks = data.setdefault("hooks", {})
+stop_entries = hooks.setdefault("Stop", [])
+
+for item in stop_entries:
+    for existing in item.get("hooks", []):
+        if existing.get("command") == command:
+            hooks_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+            raise SystemExit(0)
+
+stop_entries.append({"hooks": [entry]})
+hooks_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+PY
+      ;;
+  esac
+fi
+
 echo "Installed simplify plugin to $plugin_root"
 echo "Updated marketplace: $marketplace_path"
 echo "Installed visible skill mirror: $skill_mirror_path"
 if [[ "$WITH_GATE" == "1" ]]; then
   echo "Installed Simplify Gate into $agents_path"
+  echo "Configured Codex Stop hook in $codex_hooks_path when supported by the current platform"
 fi
 echo "Restart Codex to load the plugin."

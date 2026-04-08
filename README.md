@@ -1,35 +1,59 @@
-# Codex Simplify Plugin
+# Codex Simplify
+
+[![Skill-first](https://img.shields.io/badge/shape-skill--first-111111?style=flat-square)](./skills/simplify/SKILL.md)
+[![Windows](https://img.shields.io/badge/windows-AGENTS%20gate-0A7A3F?style=flat-square)](./examples/AGENTS.snippet.md)
+[![macOS%2FLinux](https://img.shields.io/badge/macos%2Flinux-optional%20Stop%20hook-1F6FEB?style=flat-square)](./examples/codex.hooks.json)
 
 [中文说明](./README.zh-CN.md)
 
-`simplify` is a Codex plugin and skill for final code cleanup review.
+> A skill-first finish-line discipline for Codex.<br>
+> Tighten a code task before you call it done.
 
-It is designed for the end of a coding task, not the beginning. The goal is to review the current diff from three angles and tighten the result before you treat the work as finished:
+`simplify` is primarily a **Codex skill**. The plugin layer exists to make installation and distribution easier, but the core product is the skill itself: a maintenance-debt cleanup protocol for task closure.
 
-- reuse
-- quality
-- efficiency
+## At A Glance
 
-## What it includes
+| Area | Default path |
+|---|---|
+| Core product | [`skills/simplify/SKILL.md`](./skills/simplify/SKILL.md) |
+| Best Windows setup | Skill + `AGENTS.md` gate |
+| Best macOS/Linux setup | Skill + `AGENTS.md` gate + optional Codex `Stop` hook |
+| What the plugin adds | Easier install, marketplace entry, skill mirror, optional gates |
 
-- `.codex-plugin/plugin.json`
-- `skills/simplify/SKILL.md`
+## What It Does
 
-## Install
+When a code task is being wrapped up, `simplify` asks the main agent to:
 
-One-command install on Windows PowerShell:
+- classify the task as `feature`, `refactor`, or `bugfix`
+- review the current task scope through the right tracks
+- merge findings into `must_fix`, `fix_if_cheap`, and `note_only`
+- rerun verification before claiming completion
+
+Core tracks:
+
+- `repo_fit`
+- `quality`
+- `reuse`
+- `blast_radius`
+- `efficiency` when performance-relevant
+
+## Quick Start
+
+### Install The Skill Bundle
+
+Windows PowerShell:
 
 ```powershell
 irm https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.ps1 | iex
 ```
 
-One-command install on macOS/Linux:
+macOS/Linux:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.sh | bash
 ```
 
-Install with the optional completion gate enabled:
+### Install With Finish-Line Gate
 
 Windows PowerShell:
 
@@ -43,27 +67,61 @@ macOS/Linux:
 curl -fsSL https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.sh | SIMPLIFY_WITH_GATE=1 bash
 ```
 
-What the installer does:
+## Use Modes
 
-- installs or updates the plugin at `~/plugins/simplify`
-- updates `~/.agents/plugins/marketplace.json`
-- installs a visible skill mirror at `~/.codex/skills/simplify/SKILL.md`
-- optionally appends the completion gate to `~/.codex/AGENTS.md`
+| Mode | Best for | What it adds |
+|---|---|---|
+| Skill only | Manual use, existing Codex users | Just the skill |
+| Skill + `AGENTS.md` gate | Windows, stronger finish-line discipline | Appends `Simplify Gate` to `~/.codex/AGENTS.md` |
+| Skill + `AGENTS.md` gate + Codex `Stop` hook | macOS/Linux, extra native stop-time guard | Also writes a `Stop` hook to `~/.codex/hooks.json` |
 
-## Optional completion gate
+## Platform Notes
 
-If you prefer to install the completion gate manually, use the snippet at [examples/AGENTS.snippet.md](./examples/AGENTS.snippet.md).
+| Platform | Skill | `AGENTS.md` gate | Codex `Stop` hook |
+|---|---|---|---|
+| Windows | Yes | Recommended primary path | Not currently available |
+| macOS/Linux | Yes | Useful | Available as optional extra guard |
 
-This keeps the trigger scoped to code-task completion instead of letting the skill fire on unrelated conversations.
+OpenAI's Codex hooks documentation currently says hooks are disabled on Windows. For Windows users, the practical enforcement path is the skill plus the `AGENTS.md` gate.
 
-## Usage
+## What The Installer Writes
 
-Manual use:
+- plugin: `~/plugins/simplify`
+- marketplace entry: `~/.agents/plugins/marketplace.json`
+- visible skill mirror: `~/.codex/skills/simplify/SKILL.md`
+- optional instruction gate: `~/.codex/AGENTS.md`
+- optional Codex hook: `~/.codex/hooks.json`
 
-- invoke `simplify` from the skill picker or command surface
+## Hook Config
 
-Recommended behavior:
+Codex hook discovery lives in `~/.codex/hooks.json` or `<repo>/.codex/hooks.json`, not in the plugin manifest.
 
-- use it only after code changes exist
-- keep the review focused on the current diff
-- use it as a cleanup gate, not as a general-purpose code review tool
+This repo ships:
+
+- [SKILL.md](./skills/simplify/SKILL.md): the actual simplify meta-skill
+- [AGENTS.snippet.md](./examples/AGENTS.snippet.md): instruction-layer finish-line gate
+- [simplify_stop_gate.py](./scripts/simplify_stop_gate.py): Codex `Stop` hook script
+- [codex.hooks.json](./examples/codex.hooks.json): example Codex hook config
+
+The hook is optional. The skill is the core product.
+
+## Typical Workflow
+
+1. Finish the main implementation and run your normal verification.
+2. Invoke `simplify` on the current diff.
+3. Run the matching review tracks.
+4. Fix worthwhile findings.
+5. Re-verify before stopping.
+
+## Why This Repo Is A Plugin At All
+
+Because plugins are useful for **distribution**, not because the skill needs a plugin to work.
+
+If you already know how to manage Codex skills manually, you can think of this repo as:
+
+- a strong `simplify` skill
+- plus a convenience installer
+
+## License
+
+[MIT](./LICENSE)

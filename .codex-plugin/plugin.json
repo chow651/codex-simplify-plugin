@@ -1,7 +1,7 @@
 {
   "name": "simplify",
   "version": "0.1.0",
-  "description": "Run a cleanup review over changed code for reuse, quality, and efficiency.",
+  "description": "以 Skill 为核心的 Codex 代码任务收尾清理协议。",
   "author": {
     "name": "chow651",
     "url": "https://github.com/chow651"
@@ -13,14 +13,16 @@
     "simplify",
     "review",
     "cleanup",
+    "hook",
     "quality",
-    "efficiency"
+    "efficiency",
+    "maintenance"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Simplify",
-    "shortDescription": "Run a final cleanup review over changed code",
-    "longDescription": "Use Simplify to run a focused cleanup pass over current code changes, checking reuse opportunities, structural quality, and efficiency before considering the work finished.",
+    "shortDescription": "以 Skill 为核心的代码任务收尾清理协议",
+    "longDescription": "Simplify 的核心是一份面向 Codex 的收尾 Skill。插件层负责安装和分发，真正的能力本体会在任务收尾时完成任务分类、选择正确审查轨道、收敛问题分级，并在支持的平台上配合 AGENTS 规则与可选的 Codex Stop hook 使用。",
     "developerName": "chow651",
     "category": "Coding",
     "capabilities": [
@@ -32,9 +34,9 @@
     "privacyPolicyURL": "https://github.com/chow651/codex-simplify-plugin",
     "termsOfServiceURL": "https://github.com/chow651/codex-simplify-plugin",
     "defaultPrompt": [
-      "Run simplify on the current diff",
-      "Review my recent code changes for cleanup opportunities",
-      "Check this implementation for reuse, quality, and efficiency issues"
+      "在任务结束前对当前 diff 运行 simplify",
+      "用 simplify skill 在宣告完成前再收紧一轮这次任务",
+      "先判断任务类型，再运行对应的 simplify 审查轨道"
     ],
     "brandColor": "#111111",
     "screenshots": []
