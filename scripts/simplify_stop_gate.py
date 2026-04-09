@@ -75,11 +75,13 @@ SIMPLIFY_RESOLUTION_PATTERNS = [
     re.compile(r"\bmust_fix\b", re.IGNORECASE),
     re.compile(r"\bfix_if_cheap\b", re.IGNORECASE),
     re.compile(r"\bnote_only\b", re.IGNORECASE),
+    re.compile(r"no cleanup needed", re.IGNORECASE),
     re.compile(r"kept findings", re.IGNORECASE),
     re.compile(r"skip reason", re.IGNORECASE),
     re.compile(r"selected tracks", re.IGNORECASE),
     re.compile(r"task type", re.IGNORECASE),
     re.compile(r"已修问题"),
+    re.compile(r"无需清理"),
     re.compile(r"保留问题"),
     re.compile(r"保留理由"),
     re.compile(r"跳过依据"),
@@ -203,6 +205,9 @@ def has_strict_signal(paths: list[str]) -> bool:
         "simplify_stop_gate.py",
         "/config/",
         "/configs/",
+        "/shared/",
+        "/common/",
+        "/public/",
     )
     return any(any(pattern in path for pattern in signal_patterns) for path in lowered_paths)
 

@@ -17,6 +17,7 @@
 |---|---|
 | 入口 skill | [`skills/using-simplify/SKILL.md`](./skills/using-simplify/SKILL.md) |
 | 清理协议 | [`skills/simplify/SKILL.md`](./skills/simplify/SKILL.md) |
+| 审查模式 | Lite / Standard / Strict |
 | Windows 最优路径 | skill + `AGENTS.md` gate |
 | macOS / Linux 最优路径 | skill + `AGENTS.md` gate + 可选 `Stop` hook |
 | plugin 的意义 | 降低安装和分发成本 |
@@ -44,6 +45,37 @@
 - `efficiency`
 
 其中 `efficiency` 只在性能相关场景下加入。
+
+## 审查模式
+
+| 模式 | 适用场景 | 结果 |
+|---|---|---|
+| `Skip` | 没有有效的行为性改动 | 明确写出跳过依据 |
+| `Lite` | 小范围、低风险、局部改动 | 短审查 + 最小必要验证 |
+| `Standard` | 正常 feature / bugfix / refactor 收尾 | 执行标准清理协议 |
+| `Strict` | 高风险或大范围改动 | 提高审查强度与验证范围 |
+
+`Skip` 和 `无需清理` 不是一回事：
+
+- `Skip`：没有值得进入 simplify 的目标
+- `无需清理`：已经运行了 simplify，但没有发现值得处理的问题
+
+`Strict` 的客观触发信号包括：
+
+- 改动 6 个及以上文件
+- 改动构建或运行配置
+- 改动依赖清单
+- 改动共享或公共模块
+- 改动测试并扩大验证范围
+- 改动 hook 或插件清单
+- 跨多个调用面改变用户可见行为
+
+`无需清理` 只有在这些证据都成立时才有效：
+
+- 改动保持局部
+- 沿用仓库已有模式
+- 没有新增不必要的抽象、状态或重复实现
+- 受影响路径已有足够验证
 
 ## 快速开始
 
@@ -96,6 +128,7 @@ curl -fsSL https://raw.githubusercontent.com/chow651/codex-simplify-plugin/maste
 
 - plugin：`~/plugins/simplify`
 - marketplace：`~/.agents/plugins/marketplace.json`
+- 可见 skill 镜像：`~/.codex/skills/using-simplify/SKILL.md`
 - 可见 skill 镜像：`~/.codex/skills/simplify/SKILL.md`
 - 可选指令层 gate：`~/.codex/AGENTS.md`
 - 可选 Codex hook：`~/.codex/hooks.json`
@@ -117,11 +150,18 @@ hook 是增强层，不是核心产品本身。skill 才是主产品。
 ## 典型使用流程
 
 1. 完成功能实现，并执行本来的验证。
-2. 由 `using-simplify` 判断当前是否进入收尾阶段。
-3. 针对当前 diff 运行 `simplify`。
+2. 由 `using-simplify` 判断当前是 `Skip`、`Lite`、`Standard` 还是 `Strict`。
+3. 如果没有跳过，再针对当前 diff 运行 `simplify`。
 4. 运行对应的审查轨道。
-5. 修正值得修正的问题。
+5. 输出 `无需清理` 或修正值得修正的问题。
 6. 在结束前重新验证。
+
+## Worked Examples
+
+- [Feature / Standard：分层 skill 结构](./examples/cases/feature-standard-closure.md)
+- [Bugfix：旧版 PowerShell 安装器兼容](./examples/cases/bugfix-closure.md)
+- [Lite / 无需清理：局部收尾](./examples/cases/lite-no-cleanup-needed.md)
+- [Strict：hook、安装器与 gate 联动](./examples/cases/strict-closure.md)
 
 ## 为什么这个仓库仍然保留插件形态
 

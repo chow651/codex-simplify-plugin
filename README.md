@@ -135,6 +135,7 @@ OpenAI's Codex hooks documentation currently says hooks are disabled on Windows.
 
 - plugin: `~/plugins/simplify`
 - marketplace entry: `~/.agents/plugins/marketplace.json`
+- visible skill mirror: `~/.codex/skills/using-simplify/SKILL.md`
 - visible skill mirror: `~/.codex/skills/simplify/SKILL.md`
 - optional instruction gate: `~/.codex/AGENTS.md`
 - optional Codex hook: `~/.codex/hooks.json`
