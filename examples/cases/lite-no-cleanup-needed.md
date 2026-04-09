@@ -8,7 +8,7 @@ Make a small local wording correction without changing workflow shape.
 
 - one local file
 - no shared module
-- no dependency, config, hook, or plugin-manifest change
+- no config, dependency, hook, or plugin-manifest change
 - no new state or abstraction
 
 **using-simplify decision**

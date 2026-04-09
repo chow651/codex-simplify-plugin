@@ -2,15 +2,14 @@
 
 **Task**
 
-Change hook policy, installer behavior, and finish-line gate behavior together.
+Change hook policy, installer behavior, gate wording, and layered skill routing together.
 
 **Diff shape**
 
 - many files touched
-- hook logic changed
-- installer logic changed
-- gate wording changed
-- visible closure behavior changed
+- hook behavior changed
+- installer behavior changed
+- closure semantics changed
 
 **using-simplify decision**
 

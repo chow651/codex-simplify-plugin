@@ -6,8 +6,9 @@ Fix `install.ps1` so it works on older PowerShell versions where `ConvertFrom-Js
 
 **Diff shape**
 
-- one script plus small surrounding support changes
+- local script bugfix
 - installer behavior changed
+- setup path risk increased above Lite
 
 **using-simplify decision**
 
@@ -16,18 +17,18 @@ Fix `install.ps1` so it works on older PowerShell versions where `ConvertFrom-Js
 
 **Why**
 
-- compatibility bug in the install path
-- installer behavior matters at user setup time
-- local enough to avoid Strict
+- installer behavior matters at setup time
+- compatibility bug affects real users
+- local enough to avoid `Strict`
 
 **simplify result**
 
 - reviewed `blast_radius`, `repo_fit`, `quality`
-- replaced unsupported parsing assumptions
+- replaced unsupported JSON parsing assumptions
 - normalized collection handling for older PowerShell behavior
 
 **Verification**
 
 - parsed `install.ps1`
-- reran install against the current repo as source
-- confirmed visible skill mirrors updated correctly
+- reran install from local source
+- confirmed local skill mirrors were updated

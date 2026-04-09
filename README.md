@@ -165,10 +165,10 @@ The hook is optional. The skill is the core product.
 
 ## Worked Examples
 
-- [Feature / Standard: one-command installers](./examples/feature-standard-closure.md)
-- [Bugfix: older PowerShell installer compatibility](./examples/bugfix-closure.md)
-- [Lite / no cleanup needed: local installer compatibility fix](./examples/lite-no-cleanup-needed.md)
-- [Strict: routing and protocol layering across plugin, hook, and skills](./examples/strict-closure.md)
+- [Feature / Standard: one-command installers](./examples/cases/feature-standard-closure.md)
+- [Bugfix: older PowerShell installer compatibility](./examples/cases/bugfix-closure.md)
+- [Lite / no cleanup needed: local installer compatibility fix](./examples/cases/lite-no-cleanup-needed.md)
+- [Strict: routing and protocol layering across plugin, hook, and skills](./examples/cases/strict-closure.md)
 
 ## Why This Repo Is A Plugin At All
 
