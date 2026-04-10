@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 
 const path = require("node:path");
-const { installBundle } = require("../lib/install");
+const { installBundle, uninstallBundle } = require("../lib/install");
 
 function printHelp() {
-  console.log("Usage: codex-simplify install [--no-gate] [--target <codex-dir>] [--agents <agents-file>]");
+  console.log("Usage:");
+  console.log("  codex-simplify install [--no-gate] [--target <assistant-home>] [--agents <instruction-file>]");
+  console.log("  codex-simplify uninstall [--target <assistant-home>] [--agents <instruction-file>]");
 }
 
-function parseInstallArgs(args) {
+function parseArgs(args, command) {
   const options = {
     withGate: true,
   };
@@ -15,7 +17,7 @@ function parseInstallArgs(args) {
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
 
-    if (arg === "--no-gate") {
+    if (arg === "--no-gate" && command === "install") {
       options.withGate = false;
       continue;
     }
@@ -52,27 +54,39 @@ function main(argv = process.argv.slice(2)) {
     return 0;
   }
 
-  if (command !== "install") {
+  if (command !== "install" && command !== "uninstall") {
     throw new Error(`Unknown command: ${command}`);
   }
 
   const packageRoot = path.resolve(__dirname, "..");
-  const result = installBundle({
+  const options = {
     packageRoot,
-    ...parseInstallArgs(rest),
-  });
+    ...parseArgs(rest, command),
+  };
 
-  console.log(`Installed skills to ${path.join(result.codexRoot, "skills")}`);
-  if (result.withGate) {
-    if (result.gateInstalled) {
-      console.log(`Appended Simplify Gate to ${result.agentsPath}`);
+  if (command === "install") {
+    const result = installBundle(options);
+
+    console.log(`Installed skills to ${path.join(result.codexRoot, "skills")}`);
+    if (result.withGate) {
+      if (result.gateInstalled) {
+        console.log(`Appended Simplify Gate to ${result.agentsPath}`);
+      } else {
+        console.log(`Simplify Gate already present in ${result.agentsPath}`);
+      }
     } else {
-      console.log(`Simplify Gate already present in ${result.agentsPath}`);
+      console.log("Skipped AGENTS.md gate update");
     }
-  } else {
-    console.log("Skipped AGENTS.md gate update");
+    return 0;
   }
 
+  const result = uninstallBundle(options);
+  console.log(`Removed ${result.removedSkills.length} installed skill directories from ${path.join(result.codexRoot, "skills")}`);
+  if (result.gateRemoved) {
+    console.log(`Removed Simplify Gate from ${result.agentsPath}`);
+  } else {
+    console.log(`No Simplify Gate block found in ${result.agentsPath}`);
+  }
   return 0;
 }
 

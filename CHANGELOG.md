@@ -2,6 +2,13 @@
 
 All notable protocol changes for the `simplify` skill set are recorded here.
 
+## [0.4.0] - 2026-04-10
+
+- added `codex-simplify uninstall` to remove installed skills and the appended `Simplify Gate` block
+- restored worked examples so the cleanup modes and `no cleanup needed` outcome have concrete references
+- expanded install coverage for nested targets and pre-existing instruction files without trailing newlines
+- documented cross-environment installation by making `--target` and `--agents` the primary override path
+
 ## [0.3.0] - 2026-04-10
 
 - added the `codex-simplify` npm CLI for global installation

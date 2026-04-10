@@ -63,9 +63,27 @@ Optional flags:
 codex-simplify install --no-gate
 codex-simplify install --target ~/.codex
 codex-simplify install --agents ~/.codex/AGENTS.md
+codex-simplify uninstall
 ```
 
 The default install copies both skills into `~/.codex/skills` and appends `## Simplify Gate` to `~/.codex/AGENTS.md` only when that block is not already present.
+
+## Other Assistant Homes
+
+The default target is `~/.codex`, but the CLI is not limited to that directory. If your assistant environment stores skills or instructions elsewhere, point both paths explicitly:
+
+```bash
+codex-simplify install --target /path/to/assistant-home --agents /path/to/instructions.md
+```
+
+Examples:
+
+```bash
+codex-simplify install --target ~/.codex --agents ~/.codex/AGENTS.md
+codex-simplify install --target ~/.claude --agents ~/.claude/CLAUDE.md
+```
+
+Use the matching `uninstall` command with the same `--target` and `--agents` values when you want to remove the installed skills and gate block.
 
 ## Manual Install
 
@@ -133,6 +151,13 @@ Strict is triggered by objective signals such as:
 3. Run `simplify` on the current task scope.
 4. Fix worthwhile findings.
 5. Re-run verification and then close the task.
+
+## Worked Examples
+
+- [Feature / Standard](./examples/cases/feature-standard-closure.md)
+- [Bugfix](./examples/cases/bugfix-closure.md)
+- [Lite / no cleanup needed](./examples/cases/lite-no-cleanup-needed.md)
+- [Strict](./examples/cases/strict-closure.md)
 
 ## License
 

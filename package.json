@@ -1,6 +1,6 @@
 {
   "name": "codex-simplify",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Install the Codex Simplify skill bundle into ~/.codex",
   "license": "MIT",
   "repository": {

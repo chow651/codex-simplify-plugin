@@ -63,9 +63,27 @@ codex-simplify install
 codex-simplify install --no-gate
 codex-simplify install --target ~/.codex
 codex-simplify install --agents ~/.codex/AGENTS.md
+codex-simplify uninstall
 ```
 
 默认安装行为是：把两份 skill 复制到 `~/.codex/skills`，并且只在目标文件还没有 `## Simplify Gate` 这段内容时，追加到 `~/.codex/AGENTS.md`。
+
+## 其他环境路径
+
+默认目标目录是 `~/.codex`，但 CLI 不绑定这个路径。只要目标环境的 skill 根目录和指令文件位置不同，就显式传入 `--target` 与 `--agents`：
+
+```bash
+codex-simplify install --target /path/to/assistant-home --agents /path/to/instructions.md
+```
+
+例如：
+
+```bash
+codex-simplify install --target ~/.codex --agents ~/.codex/AGENTS.md
+codex-simplify install --target ~/.claude --agents ~/.claude/CLAUDE.md
+```
+
+如果之后要移除安装内容，就用同样的 `--target` 和 `--agents` 参数执行 `uninstall`。
 
 ## 手工安装
 
@@ -133,6 +151,13 @@ cat examples/AGENTS.snippet.md >> ~/.codex/AGENTS.md
 3. 由 `simplify` 审查当前任务范围。
 4. 修正值得修正的问题。
 5. 重新验证后再结束任务。
+
+## Worked Examples
+
+- [Feature / Standard](./examples/cases/feature-standard-closure.md)
+- [Bugfix](./examples/cases/bugfix-closure.md)
+- [Lite / 无需清理](./examples/cases/lite-no-cleanup-needed.md)
+- [Strict](./examples/cases/strict-closure.md)
 
 ## 许可证
 
