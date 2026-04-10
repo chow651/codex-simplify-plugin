@@ -3,6 +3,11 @@
   "version": "0.3.0",
   "description": "Install the Codex Simplify skill bundle into ~/.codex",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chow651/codex-simplify.git"
+  },
+  "homepage": "https://github.com/chow651/codex-simplify#readme",
   "bin": {
     "codex-simplify": "bin/codex-simplify.js"
   },
@@ -18,6 +23,9 @@
   ],
   "scripts": {
     "test": "node --test"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   },
   "engines": {
     "node": ">=18"

@@ -19,7 +19,7 @@
 | Gate snippet | [`examples/AGENTS.snippet.md`](./examples/AGENTS.snippet.md) |
 | Protocol history | [`CHANGELOG.md`](./CHANGELOG.md) |
 | Review modes | Lite / Standard / Strict |
-| Recommended setup | `npm i -g github:chow651/codex-simplify` then `codex-simplify install` |
+| Recommended setup | `npm i -g codex-simplify` then `codex-simplify install` |
 
 ## Versioning And Upgrades
 
@@ -50,10 +50,10 @@ This repo ships:
 
 ## Install
 
-Global npm install from GitHub:
+Global npm install:
 
 ```bash
-npm i -g github:chow651/codex-simplify
+npm i -g codex-simplify
 codex-simplify install
 ```
 
@@ -66,8 +66,6 @@ codex-simplify install --agents ~/.codex/AGENTS.md
 ```
 
 The default install copies both skills into `~/.codex/skills` and appends `## Simplify Gate` to `~/.codex/AGENTS.md` only when that block is not already present.
-
-If you later publish the package to the npm registry, the command can be shortened to `npm i -g codex-simplify`.
 
 ## Manual Install
 

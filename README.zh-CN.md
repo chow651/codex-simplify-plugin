@@ -19,7 +19,7 @@
 | Gate 片段 | [`examples/AGENTS.snippet.md`](./examples/AGENTS.snippet.md) |
 | 协议历史 | [`CHANGELOG.md`](./CHANGELOG.md) |
 | 审查模式 | Lite / Standard / Strict |
-| 推荐安装方式 | `npm i -g github:chow651/codex-simplify` 后执行 `codex-simplify install` |
+| 推荐安装方式 | `npm i -g codex-simplify` 后执行 `codex-simplify install` |
 
 ## 版本与升级
 
@@ -50,10 +50,10 @@ Breaking change 规则：
 
 ## 安装
 
-通过 GitHub 进行全局 npm 安装：
+全局 npm 安装：
 
 ```bash
-npm i -g github:chow651/codex-simplify
+npm i -g codex-simplify
 codex-simplify install
 ```
 
@@ -66,8 +66,6 @@ codex-simplify install --agents ~/.codex/AGENTS.md
 ```
 
 默认安装行为是：把两份 skill 复制到 `~/.codex/skills`，并且只在目标文件还没有 `## Simplify Gate` 这段内容时，追加到 `~/.codex/AGENTS.md`。
-
-如果后续把这个包正式发布到 npm registry，安装命令就可以缩短成 `npm i -g codex-simplify`。
 
 ## 手工安装
 
